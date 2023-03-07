@@ -1,0 +1,211 @@
+---
+title: "R_Assignment1"
+output: html_notebook
+---
+# 3.1 Vector
+1.create the following vector x=(1.2 2.3 0.2 1.1)
+
+
+
+```{r}
+x<- c(1.2,2.3,0.2,1.1)
+```
+
+2. check the class of the vector using the class() function
+
+```{r}
+class(x)
+```
+
+3.output the second element of the vector 
+```{r}
+x[2]
+```
+
+4.output the elements 2 and 3 of the vector
+
+```{r}
+x[c(2,3)]
+```
+5. replace the value of the first element of the vector
+```{r}
+x[c(-1)]
+```
+
+6.select all elements where the value is greater than 2
+
+```{r}
+x[c(2)]
+```
+
+7.One very helpful feature of vectors is that if we apply functions they will typically
+be carried out on all of the vectors. Square each value of x and assign it to a new
+variable called x.squared()
+
+```{r}
+x.squared <- x*x
+```
+
+8.. Append the value 5.2 to x.
+```{r}
+x+5.2
+```
+
+
+9. Compute the mean value of the updated vector x and check its length.
+```{r}
+mean(x+5.2)
+length(x)
+
+```
+
+10. Create a named vector containing the number of days of each month. Further,
+calculate the number of days in a year.
+
+
+```{r}
+days_each_month <-c(31,28,31,30,31,30,31,31,30,31,30,31)
+names(days_each_month) <-c('jan','feb','march','april','may','june','july','august','sept','oct','nov','dec')
+
+sum(days_each_month)
+
+```
+
+
+#3.2 Matrices
+
+
+```{r}
+P = matrix(
+  c(2,4,3,1,5,7),
+  nrow = 2,
+  ncol = 3,
+  byrow = TRUE
+  )
+```
+1. Sum the values in the first row
+```{r}
+sum(P[1,])
+```
+2. sum the values in the first column
+
+```{r}
+sum(P[,1])
+```
+3.specify names for rows  (“Row1, Row”) and columns (“Col1”, “Col2”).
+
+
+```{r}
+dimnames(P)= list(
+  
+   c("row1","row2"),
+   c("col1","col2","col3")
+  
+)
+P
+
+```
+4.. Select the second row in the matrix p using its name (“Row2”).
+```{r}
+P['row2',]
+```
+
+5. Remove the third column from matrix p.
+```{r}
+P=P[,c("col1","col2")]
+P
+```
+
+6. Add the column back again.
+```{r}
+P
+```
+
+```{r}
+C=matrix(
+  c(3,7),
+  
+  nrow = 2,
+  ncol =1
+ 
+  
+)
+
+cbind(P,C)
+
+```
+
+
+7.
+
+```{r}
+Bejing_Winter_Olympics =matrix(
+  
+  c(1,2,1,7,7,4,0,2,0,1,0,1,4,8,14,1,0,1,0,0,1,2,2,4,5,7,2,12,10,5,1,1,0,1,0,2,2,7,8,3,6,9,0,0,1,8,5,4,2,1,0,16,8,13,9,4,2,0,0,1,6,12,14,2,5,2,1,0,1,2,3,2,0,1,0,8,5,5,7,2,6,0,1,0,8,10,7),
+  nrow=29,
+  ncol=3,
+  byrow= TRUE
+)
+
+dimnames(Bejing_Winter_Olympics)=list(
+  c("Australia","Austria","Belasrus","Belgium","Canada","Czech Republic","Estonia","Finland","France","Germany","Great Britain","Hungary","Italy","Japan","Latvia","Netherlands","New Zealand","Norway","People's Republic of China","Poland","ROC","Republic of Korea","Slovakia","Slovenia","Spain","Sweden","Switzerland","Ukraine","United States of America"),
+  c("Gold","Silver","Bronze")
+)
+Bejing_Winter_Olympics
+```
+
+
+# 3.3 Lists
+
+list is one dimensional but each element can be a different type of variable. they can be number or character, vertor or matrix or tables of data . 
+
+```{r}
+a= list("a",1,c(4,5,6))
+```
+accessing element in list:
+```{r}
+a[[1]]
+```
+1.  Return the elements 1 and 3 as a list.
+```{r}
+a[c(1,3)]
+```
+
+2. Provide each element position a name (e.g., “One”, “Two”, “Three”).
+
+```{r}
+a= list("One" = "a","Two" = 1, "Three"= c(4,5,6))
+a$One
+a$Three
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
