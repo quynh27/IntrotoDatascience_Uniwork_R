@@ -1,0 +1,192 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(MASS)
+data("women")
+str(women)
+```
+
+```{r}
+summary(women)
+```
+```{r}
+ggplot(data = women, aes(x=weight, y=height))+geom_point()
+```
+
+
+
+
+```{r}
+cor.test(women$weight,women$height)
+```
+
+```{r}
+womenModel <- lm(height~weight,data= women) #predict height based on weight, using data women
+```
+
+```{r}
+plot(womenModel)
+summary(womenModel)
+```
+
+--> model : y= 25.723456+0.287249x
+
+
+
+```{r}
+ggplot(data= women, aes(x=weight, y=height))+geom_point()+geom_abline(mapping = aes(slope=womenModel$coefficients[2],intercept=womenModel$coefficients[1]),color='red')
+```
+```{r}
+plot(womenModel,which =1)
+```
+```{r}
+
+```
+
+```{r}
+layout(matrix(1:6,ncol=2,byrow = TRUE))
+plot(womenModel,1:6)
+```
+
+
+- if we want the prediction result in an 95% interval:
+```{r}
+newWomen <- data.frame(weight=c(130,170))
+
+predict(womenModel,newdata = newWomen,interval = "confidence")
+```
+
+a woman with the weight of 130 will have on avg a height ranging between 62.79 and 63.33
+weight: 170, height ranging between 73.95 and 75.1
+- if we want a concrete prediction result. cach1
+```{r}
+predict(womenModel,newdata = newWomen)
+```
+
+-cach 2 : if we want  
+```{r}
+predict(womenModel,newdata = newWomen,interval = "prediction")
+```
+--> this tells that 95% of the ppl with the weight of 130 have a height ranging between 62.07 and 64.05
+
+
+
+### watch out: the data used for building model and the data used for prediction should have normal distribution
+
+## check if the data follows the normal distribution with shapiro wilk test
+
+```{r}
+shapiro.test(women$weight)
+shapiro.test(women$height)
+```
+--> if p<0.05 then the population is likely not a normal distribution and vice versa
+
+#Exercise
+
+```{r}
+data("faithful")
+summary(faithful)
+```
+
+
+```{r}
+faithful
+```
+
+
+```{r}
+faithfulModel <- lm(eruptions~waiting, data = faithful)
+```
+```{r}
+ggplot(data= faithful, aes(x=eruptions, y=waiting))+geom_point()
+```
+
+```{r}
+plot(faithfulModel)
+summary(faithfulModel)
+```
+
+
+```{r}
+predict(faithfulModel,newdata = data.frame(waiting=80))
+```
+--> with the waiting time 80, the eruption time is  to 4.17
+
+
+#4 multiple linear regression using r
+
+
+```{r}
+data("mtcars")
+?mtcars
+View(mtcars)
+```
+
+```{r}
+mpgModel <- lm(formula = mpg~cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb,data = mtcars)
+summary(mpgModel)
+plot(mpgModel)
+```
+
+```{r}
+mpgModel$fitted.values
+```
+
+#prediction with the model:
+
+```{r}
+mpgPredictions <- data.frame(mpg=mtcars$mpg,pred = mpgModel$fitted.values)
+mpgPredictions
+```
+
+```{r}
+ggplot(data = mpgPredictions,aes(x=mpg,y=pred))+geom_point()+geom_abline(mapping=aes(slope=1, intercept=0),color='red')
+```
+
+###stepwise regression
+```{r}
+reducedModel <- step(mpgModel,direction = "backward")
+summary(reducedModel)
+```
+
+
+
+
+predictions with stepwise model:
+
+
+```{r}
+mpgPredictions_with_stepwisereg <-data.frame(mpg=mtcars$mpg,pred = reducedModel$fitted.values)
+
+ggplot(data = mpgPredictions_with_stepwisereg,aes(x=mpg,y=pred))+geom_point()+geom_abline(mapping=aes(slope=1, intercept=0),color='red')
+
+```
+
+```{r}
+mpgPredictions_with_stepwisereg
+```
+
+
+
+
+#exercise
+predictions with only wt based-model (mpgModel2):
+
+```{r}
+mpgModel2 = lm(mpg~wt, data = mtcars)
+summary(mpgModel2)
+```
+
+```{r}
+mpg_with_wt <-data.frame(mpg=mtcars$mpg,wt= mtcars$wt)
+
+ggplot(data = mpg_with_wt,aes(x=wt,y=mpg))+geom_point()+geom_abline(mapping=aes(slope=mpgModel2$coefficients[2], intercept=mpgModel2$coefficients[1]),color='red')
+```
+
+
+
+
+
