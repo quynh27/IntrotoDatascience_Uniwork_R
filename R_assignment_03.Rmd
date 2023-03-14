@@ -1,0 +1,257 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+```
+```{r}
+filter(mpg, manufacturer=="audi")
+```
+
+
+
+
+
+```{r}
+filter(mpg,displ >2)
+```
+
+```{r}
+filter(mpg, displ >2 & cyl>6)
+```
+
+
+
+
+
+```{r}
+filter(mpg,manufacturer=="audi" ,year==1999)
+```
+
+```{r}
+#filter(mpg,manufacturer=="audi" ,year==1999) would also return the same result
+```
+Exercise 
+
+1. filter the row where the manufacter is audi or the year of production is 1999
+```{r}
+filter(mpg,manufacturer=="audi" |year==1999)
+```
+
+
+2. filter the row where the year of production is 1999 and the manufacturer is not audi
+
+```{r}
+filter(mpg,manufacturer!="audi" & year==1999)
+```
+
+
+
+```{r}
+filter(mpg,(manufacturer=="audi"|manufacturer=="chevrolet") ,year==1999)%>%
+
+count(manufacturer)
+```
+
+
+
+#filter(mpg,manufacturer %in% c("audi","chevrolet"),year==1999)
+
+
+
+
+selecting sample
+
+```{r}
+sample_frac(mpg,0.05,replace = TRUE) #sample 5% of the data
+```
+
+```{r}
+sample_n(mpg,10,replace = TRUE) #sample 10 rows the data
+#hear replace = True means that one same row can be selected again
+#everytime we run this function, the sample is renewed and gives different sample. If we want the consistent result , we use set.seed(x) where x is a nunmber before calling the same function
+set.seed(3)
+```
+
+
+#3.2 Reordering rows- arrange()
+
+```{r}
+beijing2022Medals <- read.csv("Beijing2022.csv",sep=";")
+```
+
+```{r}
+beijing2022Medals
+```
+#Exercise
+
+1. 
+
+
+```{r}
+arrange(beijing2022Medals,desc(Gold),desc(Silver),desc(Bronze))
+
+View(arrange(beijing2022Medals,desc(Gold),desc(Silver),desc(Bronze)))
+```
+
+#3.3 Selecting columns-select()
+```{r}
+library(dplyr)
+```
+
+```{r}
+mpg
+```
+
+```{r}
+select(mpg, manufacturer, hwy)
+```
+
+```{r}
+select(mpg, starts_with("d"))
+```
+
+```{r}
+select(mpg, manufacturer, hwy)%>%
+filter(manufacturer!="chevrolet" & hwy >=20)
+```
+
+```{r}
+select(mpg, manufacturer, hwy)%>%
+filter(manufacturer!="chevrolet" & hwy >=20)%>%
+arrange(desc(manufacturer))
+```
+
+these functions calls above are the same as 
+
+```{r}
+#mpg%>%select(manufacturer, hwy)%>%
+#filter(manufacturer!="chevrolet" & hwy >=20)%>%
+#arrange(desc(manufacturer))
+```
+
+#3.4 creating new variables -mutate()- this function allows creating a new variable based on the existing variables. Mutate() doesnt change the original data
+e.g: create a new column/var for the total medals won using mutate():
+
+```{r}
+mutate(beijing2022Medals,Total = Gold+Silver+Bronze) #similar to rowSums
+
+
+```
+
+
+
+#3.5 Collapse many values down to a single summary - summarise()
+this function allows us to summarise data into a single row of values 
+```{r}
+summarise(mpg,avg=mean(hwy))
+```
+
+
+```{r}
+group_by(mpg,year,manufacturer)%>%
+summarise(count=n())
+```
+
+```{r}
+group_by(mpg,manufacturer)%>%
+summarise(count=n())
+
+#n() here stands for number . --> counting the number of rows for each manufacturer
+```
+
+#Exercise
+1. how many unique models do each manufacturer produce?
+
+```{r}
+mpg
+```
+
+```{r}
+group_by(mpg,manufacturer,model)%>%
+summarise(count=n())
+```
+2. create a new column with a ratio of highway(hwy) cs city(cty) range called HwyCtyRatio
+
+```{r}
+Mpg_HwyCtyRatio<-mutate(mpg, HwyCtyRatio = hwy/cty)
+Mpg_HwyCtyRatio
+```
+
+
+#4 combining datasets using R
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+
+```{r}
+nycflights13::airlines
+```
+
+```{r}
+nycflights13::airports
+```
+
+```{r}
+nycflights13::flights
+```
+
+
+```{r}
+flight2 <- flights %>% select(year:day,hour,origin,dest, tailnum,carrier)
+
+```
+
+
+
+```{r}
+flight2
+```
+joining the flight2 table with airlines table by carrier 
+
+```{r}
+
+
+flight2%>%
+left_join(airlines,by="carrier")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
