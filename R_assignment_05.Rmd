@@ -1,0 +1,430 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tm)
+library(tidytext)
+```
+
+
+```{r}
+getwd()
+```
+
+```{r}
+setwd("C:/Users/Saturn/Desktop/DATA_SCIENCE_UNI")
+```
+
+```{r}
+docs <- Corpus(DirSource("./texts",encoding = "UTF-8"))
+```
+
+```{r}
+str(docs)
+```
+
+```{r}
+summary(docs)
+```
+
+access a specific doc:
+```{r}
+inspect(docs[1])
+```
+bc the data structure is a list so we can also access the doc by the following syntax
+```{r}
+docs[[1]]
+```
+
+```{r}
+docs[[1]]$content
+docs[[1]]$meta
+```
+#1. convert words into lowercase with tm package using : tm_map()
+```{r}
+docs<-tm_map(docs,content_transformer(tolower))
+docs[[1]]$content
+```
+
+#2.Remove very common words of English (called : stopwords) like this:
+
+```{r}
+docs<-tm_map(docs,removeWords,stopwords("English"))
+docs[[1]]$content
+```
+
+#3.remove punctuation marks:
+
+```{r}
+docs<- tm_map(docs,removePunctuation)
+docs[[1]]$content
+```
+
+
+```{r}
+trumpDTM <- DocumentTermMatrix(docs)
+trumpDTM
+```
+
+#view the contents of documentterm maxtrix with inspect()
+```{r}
+inspect(trumpDTM)
+
+```
+
+
+
+
+```{r}
+inspect(trumpDTM[1:2,1:2])
+```
+
+
+### 
+there are many 0s -> wastes memory (sparse )of the matrix -> remove 0(low freq terms)
+
+```{r}
+trumpDTMS<- removeSparseTerms(trumpDTM,0.05)
+trumpDTMS
+```
+
+
+
+```{r}
+inspect(trumpDTM[,c("news","fake","america","great")])
+```
+
+#Exercise: explore in which documents and with what occurence the term free ,russia, and news occur 
+```{r}
+inspect(trumpDTM[,c("free","russia","news")])
+```
+
+
+
+##analyse the occurrence and co-occurence pf words.Find the most frequent words in the corpus
+
+
+suppose we want to list the words that occur at least 50 times using document term matrix
+findFreqTerm() return a char vector in alphabetical order 
+```{r}
+
+
+trumpFreqTerms <- findFreqTerms(trumpDTM, lowfreq = 50)
+trumpFreqTerms
+
+```
+
+
+
+###sum the frequency values for each term in the DTM using colSums() . Convert DTM to normal Matrix first using as.matrix()
+colSums() return  a name vector where the elements are named by the terms and the values of the vector elements is the term frequency
+```{r}
+trumpFreqTerms <- colSums(as.matrix(trumpDTM))
+head(trumpFreqTerms)
+
+```
+### use the sort() to order the terms by freq
+
+```{r}
+sort(trumpFreqTerms, decreasing = TRUE)
+```
+
+### another way to do this is to convert the vector into dataframe , and then order this by frequency to see the most popular words that trump uses with the arrange()
+
+```{r}
+trumpFreqTermsDF <- data.frame(word = names(trumpFreqTerms), freq= trumpFreqTerms)
+
+```
+
+
+
+```{r}
+library(dplyr)
+
+```
+
+
+```{r}
+arrange(trumpFreqTermsDF,desc(freq))
+```
+
+### draw a barchart using barplot to show the most frequent words like this :
+```{r}
+trumpFreqTermsDF100 <- subset(trumpFreqTermsDF,freq >=100) %>% arrange(desc(freq))
+barplot(trumpFreqTermsDF100$freq,names.arg = trumpFreqTermsDF100$word)
+```
+
+
+# wordcloud
+
+```{r}
+install.packages("wordcloud")
+```
+
+```{r}
+library(wordcloud)
+set.seed(142)
+wordcloud(trumpFreqTermsDF$word,trumpFreqTermsDF$freq, min.freq = 50)
+```
+### identifying words that occur together
+if 2 words appear together then the corr is 1. if never then corr is 0
+```{r}
+findAssocs(trumpDTM,"fake", corlimit = 0.6)
+```
+
+#4 text mining with tidytext
+data is in tidy format
+
+```{r}
+library(tidytext)
+library(janeaustenr) > library(dplyr)
+library(stringr)
+```
+```{r}
+View(austen_books())
+```
+
+##use dplyr to provide summary of books
+```{r}
+austen_books()%>%group_by(book)%>%
+summarise(total_lines= n())
+
+
+```
+
+### convert to tidy form which is  a one token per row dataframe. word column contains in each row the word extracted in each line from text column
+```{r}
+austenTidyBooks <-austen_books()%>% unnest_tokens(word,text)
+austenTidyBooks
+```
+
+
+#4.1 Computing word frequencies
+```{r}
+austenTidyBooks%>%count(word, sort = TRUE)
+```
+
+
+##remove common words:
+```{r}
+data("stop_words")
+austenTidyBooks<- austenTidyBooks%>%
+anti_join(stop_words)
+
+austenTidyBooks%>%
+count(word,sort = TRUE)
+```
+
+
+
+
+##filter out the book emma and the count words:
+```{r}
+austenTidyBooks%>%
+filter(book=='Emma')%>%
+count(word,sort = TRUE)
+```
+
+
+
+#4.2 sentiment analysis to know if the text is positive or negative
+approach : look up words in sentiment dictionary(where words are labeled with sentiments), then count the number of words of different senitments to get overall score
+
+```{r}
+sentiments
+```
+
+
+
+
+```{r}
+get_sentiments("bing")
+```
+
+```{r}
+install.packages('textdata')
+
+```
+
+
+
+##count how many type of sentiments in nrc lexicon
+
+```{r}
+get_sentiments("nrc")%>%
+group_by(sentiment)%>%
+summarise(count=n())
+```
+
+
+#let see which words in emma match those categorised as anger
+
+###step1: filtering out words classified as anger from nrc sentiment lexicon
+
+```{r}
+nrcAnger <- get_sentiments("nrc")%>%
+filter(sentiment == "anger")
+nrcAnger
+```
+
+### step 2: use inner_join() to join emma words and nrcAnger
+```{r}
+austenTidyBooks%>%
+filter(book== "Emma")%>%
+inner_join(nrcAnger)%>%
+count(word,sort = TRUE)
+
+```
+
+
+
+###compare the books for proportion of words that match sentiment types. just using nrc lexicon and start with emma
+```{r}
+austenTidyBooks%>%
+filter(book=="Emma")%>%
+summarise(count=n())
+```
+
+### emma has 46775 words
+### compare the words with the nrc lexicon using inner_join()
+```{r}
+austenTidyBooks%>%
+filter(book=="Emma")%>%
+inner_join(get_sentiments("nrc"))%>%
+summarise(count=n())
+```
+```{r}
+austenTidyBooks%>%
+filter(book=="Emma")%>%
+inner_join(get_sentiments("nrc"))%>%
+group_by(sentiment)%>%
+summarise(percent=(n()/34141)*100)
+
+
+```
+
+
+###visualizing the positive and negative sentiment:
+
+
+
+```{r}
+library(reshape2)
+austenTidyBooks%>%
+inner_join(get_sentiments("bing"))%>%
+count(word,sentiment,sort = TRUE)%>%
+acast(word~sentiment,value.var = "n",fill=0)%>%
+comparison.cloud(colors = c("#F8766D","#00BFC4"),max.words = 100)
+```
+
+
+#4.3 finding words characteristic to documents
+tf: term frequency: the more frequent a term is, the more popular it is
+
+idf: inverse document frequency: the value increase the rarer the term is
+
+```{r}
+austenTFIDF <- austenTidyBooks%>%
+count(book,word,sort = TRUE)%>%
+bind_tf_idf(word,book,n)%>%
+arrange(desc(tf_idf))
+austenTFIDF
+```
+note: if the tf value is not integer then it is a log value. we can see the terms with high idf values are often names of people . 
+## showing words in each book with high tf-idf, these are often words which are characteristic to specific books 
+```{r}
+
+austenTFIDF%>%
+group_by(book)%>%
+top_n(12,tf_idf)%>%
+ungroup()%>%
+mutate(word = reorder(word,tf_idf))%>%
+ggplot(aes(word,tf_idf,fill=book))+geom_col(show.legend=FALSE)+facet_wrap(~book,scales="free")+
+ylab("tf-idf")+coord_flip()
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
