@@ -1,0 +1,192 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+#3 Data visualisation 
+##3.1 exploring time series data
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+library(nycflights13)
+```
+
+```{r}
+
+```
+
+in tidyverse language : data frames are called tibbles
+```{r}
+flightsEdited <- flights%>%
+mutate(date= make_date(year,month,day))
+```
+mutate() is used to create a new column with the result of make_date()
+```{r}
+flightsEdited 
+```
+
+```{r}
+flightsEdited%>%
+select(year,month,day,date)%>%
+head
+```
+### we want to display the number of flights that depart NYC each day over time . Let'S group our data by date the count the occurences with the summarise()
+```{r}
+daily <-flightsEdited%>%
+group_by(date)%>%
+summarise(n=n())
+head(daily)
+
+```
+
+###plot the flights
+```{r}
+ggplot(daily,aes(date,n))+geom_line()
+```
+###processing time serie data:
+### add columns showing weekday and month for the date
+
+```{r}
+updateFlightsEdited <- flightsEdited%>%
+mutate(weekday = wday(date,label = TRUE))%>%
+mutate(month = month(date,label = TRUE))
+updateFlightsEdited 
+```
+
+#exercise
+```{r}
+daily_january_flights <- updateFlightsEdited%>%
+filter(month=="Jan")%>%group_by(date)%>%
+summarise( n=n())
+
+daily_january_flights 
+
+
+```
+
+```{r}
+ggplot(daily_january_flights ,aes(date,n))+geom_line()
+```
+##flights to and from nyc (from or to jfk and lga) by month
+
+```{r}
+nyc_months_flights  <- updateFlightsEdited%>%
+filter(origin %in%  c("JFK","LGA")| dest %in% c("JFK","LGA"))%>%
+group_by(month)%>%
+summarise(n=n())
+nyc_months_flights
+
+```
+```{r}
+ggplot(nyc_months_flights,aes( x=month,y=n))+ geom_point()
+```
+##flights to and from nyc (from or to jfk and lga) by weekday
+```{r}
+nyc_weekday_flights <- updateFlightsEdited%>%
+filter(origin %in%  c("JFK","LGA")| dest %in% c("JFK","LGA"))%>%
+group_by(weekday)%>%
+summarise(n=n())
+nyc_weekday_flights
+```
+
+```{r}
+ggplot(nyc_weekday_flights,aes( x=weekday,y=n))+ geom_point()
+```
+#3.2 creating a correlation matrix
+```{r}
+data("mtcars")
+str(mtcars)
+```
+
+### compute the correlatin for mtcars. all values must be numeric
+```{r}
+mcor <-cor(mtcars)
+round(mcor,digits=2)
+```
+### visualization
+```{r}
+install.packages("corrplot")
+```
+
+```{r}
+library(corrplot)
+corrplot(mcor)
+```
+
+
+##visualize using ggcorr() from GGally package
+
+
+
+```{r}
+install.packages("GGally")
+```
+
+```{r}
+library(GGally)
+```
+
+```{r}
+ggcorr(mcor)
+```
+#exercise
+
+```{r}
+cor.test(mtcars$cyl,mtcars$disp)
+```
+
+#3.3 creating heatmap
+```{r}
+nba <- read.csv("http://datasets.flowingdata.com/ppg2008.csv",sep = ",")
+head(nba)
+```
+
+##rename row index to be players'names
+```{r}
+row.names(nba)<- nba$Name
+
+```
+```{r}
+head(nba)
+```
+##remove the name column
+```{r}
+nba <- nba[,2:20]
+```
+
+```{r}
+nba
+```
+###heatmap() expects input as matrix but we have a dataframe so we have to convert df to matrix
+```{r}
+nbaMatrix <- data.matrix(nba
+)
+```
+###plotting a heatmap
+```{r}
+heatmap(nbaMatrix,Rowv = NULL, Colv = NA,col = heat.colors(256),scale = "column",margins = c(5,10))
+```
+######## the darker the cell, the higher the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
